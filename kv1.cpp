@@ -1,49 +1,59 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
-double vvod(void);
-int quad_eq (double a, double b, double c);
-double mass[2];
+#ifdef NAN  //я посмотрел на каком-то сайте, сказали, чтобы попробовал добавить эти 4 строчки
+#endif
+#ifdef INFINITY
+#endif 
+
+double input(void);
+void quad_eq (double a, double b, double c, double *);
 int main (void)
 {	
 	printf("The quadratic equation has the form:"
 		" a*(x^2) + b*x + c = 0\n");
 	printf("Enter a: ");
-	double a = vvod();
+	double a = input();
 	printf("Enter b: ");
-	double b = vvod();
+	double b = input();
 	printf("Enter c: ");
-	double c = vvod();
+	double c = input();
 	printf("The equation is: "
 		"%.2lf*x^2 + %.2lf*x + %.2lf = 0\n", a,b,c);
+		
+	double *ptd = (double *) malloc(2 * sizeof(double));
 	
-	if (quad_eq(a,b,c))
-		if(mass[0] == mass[1])
-			printf("Solution: %lf.\n", mass[1]);
-		else
-			printf("Solutions: %lf, %lf.\n", mass[0], mass[1]);
+	quad_eq(a,b,c,ptd);
+	
+	if(ptd[0] == ptd[1])
+		printf("Solution: %lf", ptd[1]);
+	else
+		printf("Solutions: %lf, %lf", ptd[0], ptd[1]);
+		
+	return 0;
 }
-int quad_eq (double a, double b, double c)
+void quad_eq (double a, double b, double c, double * pt)
 {
-	extern double mass[2];
 	if (a == 0 && b == 0)
 	{
 		if (c == 0)
 		{
 			printf("x is any real number.\n");
-			return 0;
+			pt[0] = pt[1] = INFINITY;
+			return ;
 		}
 		else
 		{
 			printf("The equation has no solutions.\n");
-			return 0;
+			pt[0] = pt[1] = NAN;
+			return ;
 		}
 	}
 	
 	if (a == 0 && b != 0 && c != 0)
 	{
-		mass[0] = mass[1] = (-c)/b;	
-		return 1;	
+		pt[0] = pt[1] = (-c)/b;
+		return ;
 	}
 		
 	
@@ -52,23 +62,26 @@ int quad_eq (double a, double b, double c)
 		double d = b*b - 4*a*c;
 		
 		if (d < 0)
-			printf("The equation has no solutions.\n");	
+		{
+			printf("The equation has no solutions.\n");
+			pt[0] = pt[1] = NAN;
+			return ;
+		}
 		else if (d>0)
 		{
-			mass[0] = (-b + sqrt(d)) / (2*a);
-			mass[1] = (-b - sqrt(d)) / (2*a);
-			return 1;
+			pt[0] = (-b - sqrt(d)) / (2*a);
+			pt[1] = (-b + sqrt(d)) / (2*a);
+			return ;
 		}
 		else
 		{
-			mass[0] = mass[1] = (-b)/(2*a);
-			return 1;
+			pt[0] = pt[1] = (-b)/(2*a);
+			return ;
 		}
 	}
-	
-	return 0;
+	return ;
 }
-double vvod (void)
+double input (void)
 {
 	double a;
 	while (scanf("%lf", &a) != 1)
@@ -77,6 +90,5 @@ double vvod (void)
 		while (getchar() != '\n')
 			continue;
 	}
-	if (isdigit(a)) // если a - число, то
-		return a;
+	return a;
 }
