@@ -1,89 +1,89 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
-#ifdef NAN  //я посмотрел на каком-то сайте, сказали, чтобы попробовал добавить эти 4 строчки
-#endif
-#ifdef INFINITY
-#endif 
+#define SIZE 10
 
+double menu(void);
 double input(void);
-void quad_eq (double a, double b, double c, double *);
+int quad_eq (struct coef_and_sol * );
+void f_inp (struct coef_and_sol * );
+void f_out (struct coef_and_sol * );
+void f_sol (struct coef_and_sol * );
+
+struct coef_and_sol
+	{
+		double a;
+		double b;
+		double c;
+		double x_1;
+		double x_2;
+		int num_x;
+	};
+	
 int main (void)
 {	
-	printf("The quadratic equation has the form:"
-		" a*(x^2) + b*x + c = 0\n");
-	printf("Enter a: ");
-	double a = input();
-	printf("Enter b: ");
-	double b = input();
-	printf("Enter c: ");
-	double c = input();
-	printf("The equation is: "
-		"%.2lf*x^2 + %.2lf*x + %.2lf = 0\n", a,b,c);
-		
-	double *ptd = (double *) malloc(2 * sizeof(double));
+	struct coef_and_sol eq;  //coefficients and solutions
 	
-	quad_eq(a,b,c,ptd);
+	while (menu() != 2)
+	{
+		f_inp(&eq);
+		// сделать функцию ввода, функцию вывода, функция решения, убрать массив структур, в отдельный файл ф-ии
+		f_sol(&eq);		
+	}
 	
-	if(ptd[0] == ptd[1])
-		printf("Solution: %lf", ptd[1]);
-	else
-		printf("Solutions: %lf, %lf", ptd[0], ptd[1]);
-		
+	f_out (&eq);
+			
 	return 0;
 }
-void quad_eq (double a, double b, double c, double * pt)
+
+int quad_eq (struct coef_and_sol * eq)
 {
-	if (a == 0 && b == 0)
+	if (eq->a == 0 && eq->b == 0)
 	{
-		if (c == 0)
+		if (eq->c == 0)
 		{
-			printf("x is any real number.\n");
-			pt[0] = pt[1] = INFINITY;
-			return ;
+			return 3;  //корней бесконечно много
 		}
 		else
 		{
-			printf("The equation has no solutions.\n");
-			pt[0] = pt[1] = NAN;
-			return ;
+			return 0;
 		}
 	}
 	
-	if (a == 0 && b != 0 && c != 0)
+	if (eq->a == 0 && eq->b != 0 && eq->c != 0)
 	{
-		pt[0] = pt[1] = (-c)/b;
-		return ;
+		eq->x_1 = eq->x_2 = (-eq->c)/eq->b;
+		return 1;
 	}
 		
+	// разбить на линейное и квадратное уравнение
 	
-	if (a != 0)
+	if (eq->a != 0)
 	{
-		double d = b*b - 4*a*c;
-		
+		double d = eq->b*eq->b - 4*eq->a*eq->c;
 		if (d < 0)
 		{
-			printf("The equation has no solutions.\n");
-			pt[0] = pt[1] = NAN;
-			return ;
+			return 0;
 		}
 		else if (d>0)
 		{
-			pt[0] = (-b - sqrt(d)) / (2*a);
-			pt[1] = (-b + sqrt(d)) / (2*a);
-			return ;
+			eq->x_1 = (-eq->b - sqrt(d)) / (2*eq->a);
+			eq->x_2 = (-eq->b + sqrt(d)) / (2*eq->a);
+			return 2;
 		}
 		else
 		{
-			pt[0] = pt[1] = (-b)/(2*a);
-			return ;
+			eq->x_1 = eq->x_2 = (-eq->b)/(2*eq->a);
+			return 1;
 		}
 	}
-	return ;
+	return 0;
 }
+
+
 double input (void)
 {
-	double a;
+	double a = 0;
 	while (scanf("%lf", &a) != 1)
 	{
 		printf("Enter a number again please.\n");
@@ -92,3 +92,60 @@ double input (void)
 	}
 	return a;
 }
+
+double menu (void)
+{
+	printf("Our opportunities:\n");
+	printf("a) Input \"1\" for new equations; b) Input \"2\" for exit;\n");
+	double a = input();
+	
+	return a;
+}
+
+void f_inp (struct coef_and_sol * eq)
+{
+	printf("The quadratic equation has the form:"
+		" a*(x^2) + b*x + c = 0\n");
+		
+	printf("Enter a: ");
+	eq->a = input();
+	
+	printf("Enter b: ");
+	eq->b = input();
+	
+	printf("Enter c: ");
+	eq->c = input();
+	
+	printf("The equation is: "
+		"%.2lf*x^2 + %.2lf*x + %.2lf = 0\n", eq->a, eq->b, eq->c);
+}
+
+void f_out (struct coef_and_sol * eq)
+{
+		printf("Coefficients: a = %.2lf, b = %.2lf, c = %.2lf;\n", eq->a, eq->b, eq->c);
+		if(eq->num_x == 0)
+			printf("No solutions.\n");
+		else if (eq->num_x == 1)
+			printf("Answer: %.2lf.\n", eq->x_1);
+		else if(eq->num_x == 2)
+			printf("Answers: %.2lf, %.2lf.\n", eq->x_1, eq->x_2);
+		else 
+			printf("x is any real number.\n");
+}
+
+void f_sol (struct coef_and_sol * eq)
+{
+	switch (eq->num_x = quad_eq (eq))
+		{
+			case 0: printf("The quadratic equation has no solutions.\n");
+					break;
+			case 1: printf("Solution: %.2lf.\n", eq->x_1);
+					break;
+			case 2: printf("Solutions: %.2lf, %.2lf\n", eq->x_1, eq->x_2);
+					break;
+			case 3: printf("x is any real number.\n");
+					break;
+			default: printf("()_().\n");
+					break; 
+		};
+} 
