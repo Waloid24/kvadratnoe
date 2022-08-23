@@ -1,14 +1,19 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
-#define SIZE 10
 
+// const int SMTH = 2;
+#define SIZE 10 // const !!!
+
+// naming functions
 double menu(void);
 double input(void);
 int quad_eq (struct coef_and_sol * );
 void f_inp (struct coef_and_sol * );
 void f_out (struct coef_and_sol * );
 void f_sol (struct coef_and_sol * );
+int f_lin (struct coef_and_sol * );
+int f_sq_eq (struct coef_and_sol * );
 
 struct coef_and_sol
 	{
@@ -22,74 +27,48 @@ struct coef_and_sol
 	
 int main (void)
 {	
-	struct coef_and_sol eq;  //coefficients and solutions
+	struct coef_and_sol eq = {};  //coefficients and solutions
 	
-	while (menu() != 2)
+	while (menu() != 2) // magic const
 	{
 		f_inp(&eq);
-		// сделать функцию ввода, функцию вывода, функция решения, убрать массив структур, в отдельный файл ф-ии
 		f_sol(&eq);		
 	}
 	
-	f_out (&eq);
-			
+	f_out(&eq);		
+	
 	return 0;
 }
 
+// писать название функций с глагола
 int quad_eq (struct coef_and_sol * eq)
 {
-	if (eq->a == 0 && eq->b == 0)
+	assert(eq != nullptr);
+	
+	if (eq->a == 0)  //linear equation
 	{
-		if (eq->c == 0)
-		{
-			return 3;  //корней бесконечно много
-		}
-		else
-		{
-			return 0;
-		}
+		return f_lin(eq);
 	}
 	
-	if (eq->a == 0 && eq->b != 0 && eq->c != 0)
+	if (eq->a != 0)  //quadratic equation
 	{
-		eq->x_1 = eq->x_2 = (-eq->c)/eq->b;
-		return 1;
+		return f_sq_eq (eq);
 	}
-		
-	// разбить на линейное и квадратное уравнение
 	
-	if (eq->a != 0)
-	{
-		double d = eq->b*eq->b - 4*eq->a*eq->c;
-		if (d < 0)
-		{
-			return 0;
-		}
-		else if (d>0)
-		{
-			eq->x_1 = (-eq->b - sqrt(d)) / (2*eq->a);
-			eq->x_2 = (-eq->b + sqrt(d)) / (2*eq->a);
-			return 2;
-		}
-		else
-		{
-			eq->x_1 = eq->x_2 = (-eq->b)/(2*eq->a);
-			return 1;
-		}
-	}
 	return 0;
-}
-
+} 
 
 double input (void)
 {
 	double a = 0;
+	
 	while (scanf("%lf", &a) != 1)
 	{
 		printf("Enter a number again please.\n");
 		while (getchar() != '\n')
 			continue;
 	}
+	
 	return a;
 }
 
@@ -104,6 +83,8 @@ double menu (void)
 
 void f_inp (struct coef_and_sol * eq)
 {
+	assert (eq != nullptr);
+	
 	printf("The quadratic equation has the form:"
 		" a*(x^2) + b*x + c = 0\n");
 		
@@ -122,30 +103,94 @@ void f_inp (struct coef_and_sol * eq)
 
 void f_out (struct coef_and_sol * eq)
 {
-		printf("Coefficients: a = %.2lf, b = %.2lf, c = %.2lf;\n", eq->a, eq->b, eq->c);
-		if(eq->num_x == 0)
-			printf("No solutions.\n");
-		else if (eq->num_x == 1)
-			printf("Answer: %.2lf.\n", eq->x_1);
-		else if(eq->num_x == 2)
-			printf("Answers: %.2lf, %.2lf.\n", eq->x_1, eq->x_2);
-		else 
-			printf("x is any real number.\n");
+	assert (eq != nullptr);
+	
+	printf("Coefficients: a = %.2lf, b = %.2lf, c = %.2lf;\n", eq->a, eq->b, eq->c);
+	if(eq->num_x == 0)
+		printf("No solutions.\n");
+	else if (eq->num_x == 1)
+		printf("Answer: %.2lf.\n", eq->x_1);
+	else if(eq->num_x == 2)
+		printf("Answers: %.2lf, %.2lf.\n", eq->x_1, eq->x_2);
+	else 
+		printf("x is any real number.\n");
 }
 
 void f_sol (struct coef_and_sol * eq)
 {
+	assert (eq != nullptr);
+	
 	switch (eq->num_x = quad_eq (eq))
 		{
-			case 0: printf("The quadratic equation has no solutions.\n");
-					break;
-			case 1: printf("Solution: %.2lf.\n", eq->x_1);
-					break;
-			case 2: printf("Solutions: %.2lf, %.2lf\n", eq->x_1, eq->x_2);
-					break;
-			case 3: printf("x is any real number.\n");
-					break;
-			default: printf("()_().\n");
-					break; 
+			case 0: { printf("The quadratic equation has no solutions.\n"); break; }
+			case 1: { printf("Solution: %.2lf.\n", eq->x_1); break; }
+			case 2: { printf("Solutions: %.2lf, %.2lf\n", eq->x_1, eq->x_2); break; }
+			case -1: { printf("x is any real number.\n"); break; }
+			default: { printf("()_().\n"); }
 		};
 } 
+
+int f_lin (struct coef_and_sol * eq)
+{
+	assert (eq != nullptr);
+	
+	enum NUM_ROOTS {
+	     INF_ROOTS = -1,  //в .h файле
+	     ZERO_ROOTS = 0,
+	     ONE_ROOTS = 1,
+	     TWO_ROOTS = 2
+	 }
+	
+	if (eq->c == 0 && eq->b == 0)
+		return INF_ROOTS;
+	else if (eq->b == 0 && eq->c != 0)
+		return ZERO_ROOTS;
+	else if (eq->b != 0 && eq->c == 0)
+	{
+		eq->x_1 = eq->x_2 = 0;
+		return ONE_ROOTS;
+	}
+	else if (eq->b != 0 && eq->c != 0)
+	{
+		eq->x_1 = eq->x_2 = -(eq->c)/eq->b;
+		return ONE_ROOTS;
+	}
+	return 0;
+}
+
+int f_sq_eq (struct coef_and_sol * eq)
+{
+	assert (eq != nullptr);
+	enum NUM_ROOTS {
+	     INF_ROOTS = -1,  // в .h файле
+	     ZERO_ROOTS = 0,
+	     ONE_ROOTS = 1,
+	     TWO_ROOTS = 2
+	}
+	double double_a = 2*eq->a;
+	double double_b = eq->b;
+	double double_c = eq->c;
+	
+	double d = double_b*double_b - 2*double_a*double_c;
+	
+	// написать функцию (a)
+	//
+	//          |    true    |
+	// --------(------|------)---
+	//       0 - eps  0    0 + eps
+	if (d < 0) //
+		{
+			return ZERO_ROOTS;
+		}
+		else if (d>0)
+		{
+			eq->x_1 = (-double_b - sqrt(d)) / (double_a);
+			eq->x_2 = (-double_b + sqrt(d)) / (double_a);
+			return TWO_ROOTS; //
+		}
+		else
+		{
+			eq->x_1 = eq->x_2 = (-double_b)/(double_a);
+			return ONE_ROOTS;
+		}
+}
