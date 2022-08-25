@@ -1,0 +1,68 @@
+#include "shared_file.h"
+#include <stdio.h>
+#include <assert.h>
+#include "interface.h"
+#include "user_interaction.h"
+#include "unit_test.h"
+
+struct coef_and_sol tests[NUMBER_OF_TESTS] = 
+{
+	{0, 0, 0, 0, 0, -1},
+	{1, 2, 1, -1, -1, 1}
+};
+
+int UnitTest ()
+{
+	int n_failed_tests = 0;
+	
+	struct coef_and_sol my_solve = {};
+	
+	double x_1 = NAN, x_2 = NAN;
+	
+	for (int i = 0; i < NUMBER_OF_TESTS; i++)
+	{
+		duplicate_coefficients(&my_solve, &tests[i]);
+		
+		int nRoots = output_solutions_this_equation(&my_solve);  
+		
+		n_failed_tests += isFailed(&my_solve, &tests[i], i);
+	}
+	
+	printf("Out of %d tests, %d failed.\n", NUMBER_OF_TESTS, n_failed_tests);
+	
+	return 1; 
+} 
+
+void duplicate_coefficients (struct coef_and_sol * to_calculate, struct coef_and_sol * to_comparison)
+{	
+	assert (to_calculate != nullptr);
+	assert (to_comparison != nullptr);
+	
+	to_calculate->a = to_comparison->a;
+	to_calculate->b = to_comparison->b;
+	to_calculate->c = to_comparison->c;
+}
+
+int isFailed (struct coef_and_sol * to_calculate, struct coef_and_sol * to_comparison, int n)
+{		
+	assert (to_calculate != nullptr);
+	assert (to_comparison != nullptr);
+	
+	if (to_calculate->x_1 == to_comparison->x_1 && to_calculate->x_2 == to_comparison->x_2 && to_calculate->num_x == to_comparison->num_x)
+	{
+		printf("Accessed test_%d.\n", n+1);
+		
+		return FAILED;
+	}
+	else
+	{
+		printf("Test_%d failed: coefficient a = %lf, b = %lf, c = %lf\n", 
+				n+1, to_comparison->a, to_comparison->b, to_comparison->c);
+		printf("Received solutoins: x_1 = %lf, x_2 = %lf\n",
+				to_comparison->x_1, to_comparison->x_2, to_comparison->num_x);
+		printf("Expected solutions: x_1 = %lf, x_2 = %lf, number of roots is %d\n", 
+				to_calculate->x_1, to_calculate->x_2, to_calculate->num_x);
+				
+		return SUCCESS;
+	}
+}

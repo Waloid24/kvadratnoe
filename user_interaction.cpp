@@ -1,23 +1,28 @@
 #include "shared_file.h"
 #include <stdio.h>
-#include <assert.h>
 #include "interface.h"
 #include "user_interaction.h"
 
-void output_solutions_this_equation (struct coef_and_sol * eq)
+// Эта функци должна не решать квадратное уравнение, а только выводить его корни, то есть должна принимать заполненную структуру
+// и выводить информацию.
+// void
+int output_solutions_this_equation (struct coef_and_sol * eq)
 {
 	assert (eq != nullptr);
 	
+	// switch (eq->num_x)
+	
 	switch (eq->num_x = solve_quad_eq (eq))
 		{
-			case 0: { printf("The quadratic equation has no solutions.\n"); break; }
-			case 1: { printf("Solution: %.2lf.\n", eq->x_1); break; }
-			case 2: { printf("Solutions: %.2lf, %.2lf\n", eq->x_1, eq->x_2); break; }
-			case -1: { printf("x is any real number.\n"); break; }
-			default: { printf("()_().\n"); }
+			case 0 : { /* printf("The quadratic equation has no solutions.\n");  */ return ZERO_ROOTS; }
+			case 1 : { /* printf("Solution: %.2lf.\n", eq->x_1); 				 */ return ONE_ROOTS;  }
+			case 2 : { /* printf("Solutions: %.2lf, %.2lf\n", eq->x_1, eq->x_2); */ return TWO_ROOTS;  }
+			case -1: { /* printf("x is any real number.\n"); 					 */ return INF_ROOTS;  }
+			default: { /* printf("()_().\n"); 									 */ return -2;         }
 		};
-} 
+}
 
+// NUM_ROOTS solve_quad_eq (struct coef_and_sol * eq);
 int solve_quad_eq (struct coef_and_sol * eq)
 {
 	assert(eq != nullptr);
@@ -56,6 +61,7 @@ int solve_quad_eq (struct coef_and_sol * eq)
 	return 0;
 } 
 
+// NUM_ROOTS solve_lin_equation (struct coef_and_sol * eq)
 int solve_lin_equation (struct coef_and_sol * eq)
 {
 	assert (eq != nullptr);
@@ -70,6 +76,7 @@ int solve_lin_equation (struct coef_and_sol * eq)
 	else
 	{
 		eq->x_1 = eq->x_2 = (-eq->c)/eq->b;
+		
 		return ONE_ROOTS;
 	}
 	
@@ -78,8 +85,5 @@ int solve_lin_equation (struct coef_and_sol * eq)
 
 int isCmpZero(double a)
 {
-	if (a <= eps && a >= -eps)
-		return true;
-	else 
-		return false;
+	return fabs(a) <= eps ? 1 : 0;
 }

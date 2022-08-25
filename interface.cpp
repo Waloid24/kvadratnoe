@@ -1,6 +1,5 @@
 #include "shared_file.h"
 #include <stdio.h>
-#include <assert.h>
 #include "interface.h"
 #include "user_interaction.h"
 
