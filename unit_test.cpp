@@ -1,8 +1,5 @@
-#include "shared_file.h"
-#include <stdio.h>
-#include <assert.h>
-#include "interface.h"
-#include "user_interaction.h"
+#include "utilities.h"
+#include "quadratic_eq_solver.h"
 #include "unit_test.h"
 
 struct coef_and_sol tests[NUMBER_OF_TESTS] = 
@@ -11,7 +8,7 @@ struct coef_and_sol tests[NUMBER_OF_TESTS] =
 	{1, 2, 1, -1, -1, 1}
 };
 
-int UnitTest ()
+void UnitTest ()
 {
 	int n_failed_tests = 0;
 	
@@ -23,14 +20,13 @@ int UnitTest ()
 	{
 		duplicate_coefficients(&my_solve, &tests[i]);
 		
-		int nRoots = output_solutions_this_equation(&my_solve);  
-		
+		my_solve.num_x = solve_quad_eq(&my_solve);
 		n_failed_tests += isFailed(&my_solve, &tests[i], i);
 	}
 	
 	printf("Out of %d tests, %d failed.\n", NUMBER_OF_TESTS, n_failed_tests);
 	
-	return 1; 
+	return ; 
 } 
 
 void duplicate_coefficients (struct coef_and_sol * to_calculate, struct coef_and_sol * to_comparison)
@@ -50,19 +46,19 @@ int isFailed (struct coef_and_sol * to_calculate, struct coef_and_sol * to_compa
 	
 	if (to_calculate->x_1 == to_comparison->x_1 && to_calculate->x_2 == to_comparison->x_2 && to_calculate->num_x == to_comparison->num_x)
 	{
-		printf("Accessed test_%d.\n", n+1);
+		printf("Successed test_%d.\n", n+1);
 		
-		return FAILED;
+		return SUCCESS;
 	}
 	else
 	{
 		printf("Test_%d failed: coefficient a = %lf, b = %lf, c = %lf\n", 
 				n+1, to_comparison->a, to_comparison->b, to_comparison->c);
-		printf("Received solutoins: x_1 = %lf, x_2 = %lf\n",
-				to_comparison->x_1, to_comparison->x_2, to_comparison->num_x);
-		printf("Expected solutions: x_1 = %lf, x_2 = %lf, number of roots is %d\n", 
+		printf("Received solutoins: x_1 = %lf, x_2 = %lf, number of roots is %d\n",
 				to_calculate->x_1, to_calculate->x_2, to_calculate->num_x);
+		printf("Expected solutions: x_1 = %lf, x_2 = %lf, number of roots is %d\n", 
+				to_comparison->x_1, to_comparison->x_2, to_comparison->num_x);
 				
-		return SUCCESS;
+		return FAILED;
 	}
 }
